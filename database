@@ -1,0 +1,87 @@
+-- DB
+CREATE DATABASE IF NOT EXISTS vit_branches_simple;
+USE vit_branches_simple;
+
+-- subjects
+CREATE TABLE IF NOT EXISTS subjects (
+  subject_code VARCHAR(10) PRIMARY KEY,
+  subject_name VARCHAR(150) NOT NULL,
+  branch_scope VARCHAR(20) NOT NULL, -- 'COMMON' or branch code: 'CS','CSE_AI','IT'
+  credits INT DEFAULT 3
+);
+
+-- students
+CREATE TABLE IF NOT EXISTS students (
+  prn_no VARCHAR(20) PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  branch VARCHAR(20) NOT NULL,   -- 'CS', 'CSE_AI', 'IT'
+  division VARCHAR(2) NOT NULL,   -- 'A' or 'B'
+  year INT DEFAULT 3,
+  semester INT DEFAULT 5
+);
+
+-- results
+CREATE TABLE IF NOT EXISTS results (
+  result_id INT AUTO_INCREMENT PRIMARY KEY,
+  prn_no VARCHAR(20) NOT NULL,
+  subject_code VARCHAR(10) NOT NULL,
+  mse DECIMAL(5,2) NOT NULL CHECK (mse >= 0 AND mse <= 30),
+  ese DECIMAL(5,2) NOT NULL CHECK (ese >= 0 AND ese <= 70),
+  total DECIMAL(6,2) AS (mse + ese) STORED,
+  UNIQUE KEY uk_student_subject (prn_no, subject_code),
+  CONSTRAINT fk_res_student FOREIGN KEY (prn_no) REFERENCES students(prn_no) ON DELETE CASCADE,
+  CONSTRAINT fk_res_subject FOREIGN KEY (subject_code) REFERENCES subjects(subject_code) ON DELETE CASCADE
+);
+
+-- perform insertion
+-- For subjects
+INSERT INTO subjects (subject_code, subject_name, branch_scope, credits) VALUES
+('CS501','Data Structures','COMMON',4),
+('CS502','Database Systems','COMMON',4),
+('CS503','Operating Systems','COMMON',4),
+('CS504','Algorithms','CS',4),        -- CS-specific
+('AI504','Machine Learning','CSE_AI',4), -- CSE (AI)-specific
+('IT504','Network Security','IT',3);  -- IT-specific
+
+-- For students
+INSERT INTO students (prn_no, name, branch, division, year, semester) VALUES
+('12311686','Amit Kumar','CS','A',3,5),
+('12311504','Sneha Rao','CS','B',3,5),
+('12311607','Rahul Jain','CSE_AI','A',3,5),
+('12311906','Nisha Verma','CSE_AI','B',3,5),
+('12311698','Vikram Singh','IT','A',3,5),
+('12311937','Pooja Patel','IT','B',3,5);
+
+-- For results
+-- Example: Amit (12311686) - CS branch (common: CS501,CS502,CS503 + CS504)
+INSERT INTO results (prn_no, subject_code, mse, ese) VALUES
+('12311686','CS501',24.00,56.00),
+('12311686','CS502',22.50,60.00),
+('12311686','CS503',20.00,50.00),
+('12311686','CS504',26.00,65.00);
+
+-- Rahul (CSE_AI - branch-specific AI504)
+INSERT INTO results (prn_no, subject_code, mse, ese) VALUES
+('12311607','CS501',25.00,61.00),
+('12311607','CS502',23.00,58.00),
+('12311607','CS503',21.00,54.00),
+('12311607','AI504',27.00,67.00);
+
+-- Vikram (IT branch - IT504)
+INSERT INTO results (prn_no, subject_code, mse, ese) VALUES
+('12311698','CS501',22.00,55.00),
+('12311698','CS502',20.00,52.00),
+('12311698','CS503',19.00,48.00),
+('12311698','IT504',24.00,60.00);
+
+INSERT INTO results (prn_no, subject_code, mse, ese) VALUES
+('12311937','CS501',22.00,55.00),
+('12311937','CS502',20.00,52.00),
+('12311937','CS503',19.00,48.00),
+('12311937','IT504',24.00,60.00);
+
+INSERT INTO results (prn_no, subject_code, mse, ese) VALUES
+('12311504','CS501',22.00,55.00),
+('12311504','CS502',20.00,52.00),
+('12311504','CS503',19.00,48.00),
+('12311504','IT504',24.00,60.00);
